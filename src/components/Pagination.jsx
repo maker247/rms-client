@@ -19,7 +19,7 @@ export function CustomPagination({table, pagination, setPaginationIndex, current
                 <PaginationItem>
                 <PaginationPrevious
                     className={`cursor-pointer ${!table.getCanPreviousPage() ? 'cursor-not-allowed' : ''}`}
-                    onClick={() => table.previousPage()}
+                    onClick={() => table.getCanPreviousPage() ? table.previousPage() : false}
                     disabled={!table.getCanPreviousPage()}
                 />
                 </PaginationItem>
@@ -53,7 +53,7 @@ export function CustomPagination({table, pagination, setPaginationIndex, current
 
                     <PaginationNext 
                         className={`cursor-pointer ${!table.getCanNextPage() ? 'cursor-not-allowed' : ''} `}
-                        onClick={() => table.nextPage()}
+                        onClick={() => table.getCanNextPage() ? table.nextPage() : false}
                         disabled={!table.getCanNextPage()}
                     />
 

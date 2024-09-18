@@ -1,3 +1,8 @@
+import { 
+    Navigate,
+    useNavigate
+} from "react-router-dom"
+
 import {
     Card,
     CardContent,
@@ -14,6 +19,8 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 
 import { z } from "zod"
+
+import { useMutation } from "@tanstack/react-query"
  
 import { toast } from "@/components/hooks/use-toast"
 
@@ -24,6 +31,16 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form"
+
+import {
+    login
+} from "../../lib/admin/authFetcher"
+
+import {
+    getToken
+} from "@/lib/admin/utils"
+
+import { useApp } from "@/ThemeApp"
 
 const FormSchema = z.object({
     email: z
@@ -40,20 +57,46 @@ const FormSchema = z.object({
 
 
 export function Login() {
+    const token = getToken()
+
+    const {
+        setAuth
+    } = useApp()
+
+    const navigate = useNavigate()
 
     const form = useForm({
         resolver: zodResolver(FormSchema),
     })
 
     function onSubmit(data) {
-        toast({
-          title: "You submitted the following values:",
-          description: (
-            <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-              <code className="text-white">{JSON.stringify(data, null, 2)}</code>
-            </pre>
-          ),
-        })
+        authenticate.mutate(data)
+    }
+
+    const authenticate = useMutation({
+        mutationFn: async (data) => await login(data.email, data.password),
+        onError: (error) => {
+            console.log(error)
+
+            toast({
+                variant: "destructive",
+                title: "login error",
+                description: "unauthenticated!"
+            })
+        },
+        onSuccess: ({data}) => {
+            localStorage.setItem('token', data.token)
+
+            console.log(data)
+
+            setAuth(data)
+                
+            // navigate('/admin/dashboard')
+        }
+    })
+
+    if(token) {
+        return <Navigate to="/admin/dashboard" />
     }
 
     return (

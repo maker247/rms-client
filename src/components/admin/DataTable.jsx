@@ -26,7 +26,7 @@ import {
 
 import { CustomPagination } from "@/components/Pagination"
 
-export function DataTable({ table }) {
+export function DataTable({ table, columns }) {
 
   return (
     <div className="w-full">

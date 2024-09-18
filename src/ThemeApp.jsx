@@ -1,24 +1,39 @@
-import { createContext, useContext, useEffect, useState } from "react"
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState
+} from "react"
 
 import {
-  createBrowserRouter,
-  RouterProvider,
-} from "react-router-dom"
+  QueryClient,
+  QueryClientProvider
+} from '@tanstack/react-query'
 
 import { App } from "./App"
+
+import { authenticate } from "./lib/admin/authFetcher"
 
 const initialState = {
   theme: "system",
   setTheme: () => null,
 }
 
+const queryClient = new QueryClient()
+
 const ThemeProviderContext = createContext(initialState)
+
+export const AppContext = createContext()
+
+export const useApp = () => useContext(AppContext)
 
 export function ThemeApp({
   defaultTheme = "system",
   storageKey = "vite-ui-theme",
   ...props
 }) {
+  const [auth, setAuth] = useState(false)
+
   const [theme, setTheme] = useState(
     () => (localStorage.getItem(storageKey)) || defaultTheme
   )
@@ -41,6 +56,11 @@ export function ThemeApp({
     root.classList.add(theme)
   }, [theme])
 
+  useEffect(() => {
+    authenticate()
+      .then(user => user && setAuth(user))
+  }, [])
+
   const value = {
     theme,
     setTheme: (theme) => {
@@ -51,7 +71,18 @@ export function ThemeApp({
 
   return (
     <ThemeProviderContext.Provider {...props} value={value}>
-      <App />
+      <QueryClientProvider
+        client={queryClient}
+      >
+        <AppContext.Provider
+          value={{
+            auth,
+            setAuth
+          }}
+        >
+          <App />
+        </AppContext.Provider>
+      </QueryClientProvider>
     </ThemeProviderContext.Provider>
   )
 }
