@@ -39,11 +39,16 @@ import { DataTable } from "@/components/admin/DataTable"
 
 import { useNavigate } from "react-router-dom"
 
-import { useQuery } from "@tanstack/react-query"
+import { useMutation, useQuery } from "@tanstack/react-query"
 
-import { getUsers } from "../../../lib/admin/userFetcher"
+import { 
+  getUsers,
+  deleteUser
+} from "../../../lib/admin/userFetcher"
 
-export function Index() {
+import { queryClient } from "@/ThemeApp"
+
+export function UserIndex() {
     const navigate = useNavigate()
 
     const [sorting, setSorting] = useState([])
@@ -57,6 +62,29 @@ export function Index() {
     const [pagination, setPagination] = useState({
         pageIndex: 0, //initial page index
         pageSize: 10,
+    })
+
+    const { 
+      data: serverData,
+      error,
+      isPending
+    } = useQuery({
+      queryKey: ['users'],
+      queryFn: async () => {
+        const {data} = await getUsers()
+
+        return data
+      },
+    })
+
+    const remove = useMutation({
+      mutationFn: async uuid => {
+        await deleteUser(uuid)
+
+        await queryClient.cancelQueries("users")
+
+        await queryClient.setQueryData(["users"], users => users.filter(user => user.uuid !== uuid))
+      }      
     })
 
     const columns = [
@@ -142,7 +170,7 @@ export function Index() {
                   onClick={() => navigate(`/admin/users/${user.uuid}`)}
                 >Edit</DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={() => {}}
+                  onClick={() => remove.mutate(user.uuid)}
                 >Delete</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -150,19 +178,6 @@ export function Index() {
         },
       },
     ]
-
-    const { 
-      data: serverData,
-      error,
-      isPending
-    } = useQuery({
-      queryKey: ['users'],
-      queryFn: async () => {
-        const {data} = await getUsers()
-
-        return data
-      },
-    })
 
     const data = useMemo(() => serverData ?? [], [serverData])
 

@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query"
+
 import {
     Card,
     CardContent,
@@ -12,7 +14,9 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 
 import { zodResolver } from "@hookform/resolvers/zod"
+
 import { useForm } from "react-hook-form"
+
 import { z } from "zod"
  
 import { toast } from "@/components/hooks/use-toast"
@@ -20,7 +24,6 @@ import { toast } from "@/components/hooks/use-toast"
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -34,6 +37,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+
+import { getRoles } from "@/lib/admin/roleFetcher"
+
+import { storeUser } from "@/lib/admin/userFetcher"
+
+import { useNavigate } from "react-router-dom"
 
 const FormSchema = z.object({
     name: z
@@ -49,27 +58,57 @@ const FormSchema = z.object({
             required_error: "Please enter email",
         })
         .email(),
-    roleId: z
+    roleUuid: z
         .string({
             required_error: "Please select role"
         })
 })
 
-export function Create() {
+export function UserCreate() {
+    const navigate = useNavigate()
 
     const form = useForm({
         resolver: zodResolver(FormSchema),
     })
 
-    function onSubmit(data) {
+    const { data: roles, isPending, error } = useQuery({
+        queryKey: ['roles'],
+        queryFn: async () => {
+            const res = await getRoles()
+
+            return res.data
+        }
+    })
+
+    async function onSubmit(data) {
+        const res = await storeUser(data)
+
+        if(! res.success) {
+            toast({
+                variant: "destructive",
+                title: "user create",
+                description: "something went wrong!",
+            })
+
+            return false
+        }
+
+        navigate("/admin/users")
+
         toast({
-          title: "You submitted the following values:",
-          description: (
-            <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-              <code className="text-white">{JSON.stringify(data, null, 2)}</code>
-            </pre>
-          ),
+            title: "user create",
+            description: "user has been created successfully."
         })
+    }
+
+    if(error) {
+        toast({
+            description: error.message
+        })
+    }
+
+    if(isPending) {
+        return <h1>Loading...</h1>
     }
 
     return (
@@ -140,7 +179,7 @@ export function Create() {
 
                             <FormField
                                 control={form.control}
-                                name="roleId"
+                                name="roleUuid"
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>Role</FormLabel>
@@ -152,9 +191,14 @@ export function Create() {
                                             </FormControl>
 
                                             <SelectContent>
-                                                <SelectItem value="1">role 1</SelectItem>
-                                                <SelectItem value="2">role 2</SelectItem>
-                                                <SelectItem value="3">role 3</SelectItem>
+                                                {roles.map((role, key) => 
+                                                    <SelectItem 
+                                                        value={role.uuid}
+                                                        key={key}
+                                                    >
+                                                        {role.name}
+                                                    </SelectItem>
+                                                )}
                                             </SelectContent>
                                         </Select>
 

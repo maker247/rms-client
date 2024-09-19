@@ -7,15 +7,11 @@ import { AdminLayout } from "@/layouts/AdminLayout"
 
 import { Dashboard } from "./pages/admin/Dashboard"
 
-import { Index as UserIndex } from "@/pages/admin/users/Index"
+import { UserIndex } from "@/pages/admin/users/UserIndex"
 
-import { 
-  Create as UserCreate
-} from "@/pages/admin/users/Create"
+import { UserCreate } from "@/pages/admin/users/UserCreate"
 
-import {
-  Edit as UserEdit
-} from "@/pages/admin/users/Edit"
+import { UserEdit } from "@/pages/admin/users/UserEdit"
 
 import { Login } from "./pages/admin/Login"
 

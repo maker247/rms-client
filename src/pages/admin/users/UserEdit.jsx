@@ -17,7 +17,9 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 
 import { zodResolver } from "@hookform/resolvers/zod"
+
 import { useForm } from "react-hook-form"
+
 import { z } from "zod"
  
 import { toast } from "@/components/hooks/use-toast"
@@ -72,7 +74,7 @@ const FormSchema = z.object({
         })
 })
 
-export function Edit() {
+export function UserEdit() {
     const {uuid} = useParams()
 
     const navigate = useNavigate()
@@ -90,11 +92,11 @@ export function Edit() {
         queries: [
             {
                 queryKey: ['roles'],
-                queryFn: async () => getRoles()
+                queryFn: async () => await getRoles()
             },
             {
                 queryKey: ['user'],
-                queryFn: async () => getUser(uuid)
+                queryFn: async () => await getUser(uuid)
             }
         ]
     })

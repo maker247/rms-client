@@ -19,7 +19,7 @@ const initialState = {
   setTheme: () => null,
 }
 
-const queryClient = new QueryClient()
+export const queryClient = new QueryClient()
 
 const ThemeProviderContext = createContext(initialState)
 
